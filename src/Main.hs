@@ -5,20 +5,30 @@ import           Control.Applicative
 import           Snap.Core
 import           Snap.Util.FileServe
 import           Snap.Http.Server
-import           Heist (HeistConfig, initHeist, hcTemplateLocations, loadTemplates, hcInterpretedSplices,
-	defaultInterpretedSplices)
+import Blaze.ByteString.Builder (toByteString)
+import qualified Data.ByteString.Char8 as BS
+import Control.Monad.IO.Class (MonadIO(..))
+import Control.Monad.Trans.Either
 import Data.Monoid (mempty)
+import Data.Foldable (forM_)
+import Heist
+import Heist.Interpreted
+import Text.XmlHtml (Node(TextNode), renderHtmlFragment, Encoding(UTF8))
 
 
 main :: IO ()
 main = quickHttpServe site
 
-index :: IO ()
-index = do heist <- Heist.initHeist mempty
-    	        { hcTemplateLocations = [ loadTemplates "templates" ]
-    	  		, hcInterpretedSplices = defaultInterpretedSplices
-    	  		}
-    	   return heist 
+billy :: IO ()
+billy = eitherT (putStrLn . unlines) return $ do
+  heist <- initHeist mempty
+    { hcTemplateLocations = [ loadTemplates "templates" ]
+    , hcInterpretedSplices = defaultInterpretedSplices
+    } 
+
+  Just (output, _) <- renderTemplate heist "billy" 
+
+  liftIO . BS.putStrLn . toByteString $ output
 
 site :: Snap ()
 site =

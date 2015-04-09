@@ -21,7 +21,11 @@ Executable erd-web-server
     mtl                       >= 2     && < 3,
     snap-core                 >= 0.9   && < 0.10,
     snap-server               >= 0.9   && < 0.10,
-    heist
+    heist,
+    xmlhtml,
+    either,
+    transformers,
+    blaze-builder
 
   if impl(ghc >= 6.12.0)
     ghc-options: -threaded -Wall -fwarn-tabs -funbox-strict-fields -O2
