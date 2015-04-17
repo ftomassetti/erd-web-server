@@ -1,0 +1,22 @@
+<html>
+<head>
+    <link rel="stylesheet" type="text/css" href="assets/style.css">
+</head>
+<body>
+<div class="header">
+    <h1>Erd Web Server</h1>
+</div>
+<div class="main">
+    <link rel="stylesheet" href="assets/codemirror.css">
+    <script src="assets/codemirror.js"></script>
+    <textarea id=myTextarea></textarea>
+    <script>
+      var editor = CodeMirror.fromTextArea(myTextarea, {{ OB }}
+        lineNumbers: true
+      });
+    </script>
+    <br>
+    <a href="#">Generate Diagram</a>
+</div>
+</body>
+</html>

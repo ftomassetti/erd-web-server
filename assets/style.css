@@ -1,0 +1,32 @@
+html {
+	background-color: #444;
+	color: white;
+}
+
+.header {
+	border-bottom: 2px white solid;
+}
+
+.main {
+    margin: 20px;
+}
+
+#myTextarea {
+    margin-top: 10px;
+    min-width: 400px;
+    height: 500px;
+}
+
+a {
+    padding: 8px;
+    border-radius: 12px;
+    border: 2px solid #8AC007;
+    background-color: #8AA010;
+    text-decoration: none;
+    color: brown;
+    box-shadow: 2px 2px 3px #888888;
+}
+
+a:hover {
+    box-shadow: 1px 1px 1px #888888;
+}

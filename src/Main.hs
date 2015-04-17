@@ -32,13 +32,14 @@ import qualified Data.HashMap.Strict as H
 import Data.Text (Text)
 import qualified Data.Text.IO as T
 import qualified Data.Vector as V
+import Data.Text.Encoding
 
 main :: IO ()
 main = quickHttpServe site
 
 templateHashMap :: HashMap Text Value
 templateHashMap = H.fromList $
-  [ ("title", Literal "Grocery List")
+  [ ("OB", Literal "{")
   , ("items", List $ V.fromList [ Literal "eggs"
                                 , Literal "flour"
                                 , Literal "cereal"
@@ -47,18 +48,17 @@ templateHashMap = H.fromList $
 
 
 getContent :: IO Text
-getContent = do tplStr <- T.readFile "path/to/template.html"
+getContent = do tplStr <- T.readFile "templates/index.karver"
                 let htmlStr = renderTemplate templateHashMap tplStr
                 return htmlStr
 
 viewIndex :: Snap ()
 viewIndex = do content <- liftIO getContent
-               writeBS "hello world"
+               writeBS $ encodeUtf8 content
 
 --billy :: IO ()
 --billy = eitherT (putStrLn . unlines) return $ do
---  heist <- initHeist mempty
---    { hcTemplateLocations = [ loadTemplates "templates" ]
+--  heist <- initHeist mem--    { hcTemplateLocations = [ loadTemplates "templates" ]
 --    , hcInterpretedSplices = defaultInterpretedSplices
 --    }
 --
@@ -73,7 +73,7 @@ site =
     route [ ("foo", viewIndex)
           , ("echo/:echoparam", echoHandler)
           ] <|>
-    dir "static" (serveDirectory ".")
+    dir "assets" (serveDirectory "assets")
 
 echoHandler :: Snap ()
 echoHandler = do

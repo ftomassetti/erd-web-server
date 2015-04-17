@@ -31,7 +31,8 @@ Executable erd-web-server
     karver,
     vector,
     text,
-    unordered-containers
+    unordered-containers,
+    erd
 
   if impl(ghc >= 6.12.0)
     ghc-options: -threaded -Wall -fwarn-tabs -funbox-strict-fields -O2
