@@ -1,4 +1,5 @@
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE ScopedTypeVariables #-}
 module Main where
 
 import           Control.Applicative
@@ -11,29 +12,65 @@ import Control.Monad.IO.Class (MonadIO(..))
 import Control.Monad.Trans.Either
 import Data.Monoid (mempty)
 import Data.Foldable (forM_)
-import Heist
-import Heist.Interpreted
 import Text.XmlHtml (Node(TextNode), renderHtmlFragment, Encoding(UTF8))
 
+import           Data.ByteString (ByteString)
+--import           Snap.Snaplet
+--import           Snap.Snaplet.Heist
+import           Snap.Util.FileServe
+------------------------------------------------------------------------------
+import           Heist
+import qualified Heist.Compiled as C
+import           Data.Monoid
+import           Data.Maybe
+import Control.Lens
+import Data.Either.Unwrap
+
+import Text.Karver
+import Data.HashMap.Strict (HashMap)
+import qualified Data.HashMap.Strict as H
+import Data.Text (Text)
+import qualified Data.Text.IO as T
+import qualified Data.Vector as V
 
 main :: IO ()
 main = quickHttpServe site
 
-billy :: IO ()
-billy = eitherT (putStrLn . unlines) return $ do
-  heist <- initHeist mempty
-    { hcTemplateLocations = [ loadTemplates "templates" ]
-    , hcInterpretedSplices = defaultInterpretedSplices
-    } 
+templateHashMap :: HashMap Text Value
+templateHashMap = H.fromList $
+  [ ("title", Literal "Grocery List")
+  , ("items", List $ V.fromList [ Literal "eggs"
+                                , Literal "flour"
+                                , Literal "cereal"
+                                ])
+  ]
 
-  Just (output, _) <- renderTemplate heist "billy" 
 
-  liftIO . BS.putStrLn . toByteString $ output
+getContent :: IO Text
+getContent = do tplStr <- T.readFile "path/to/template.html"
+                let htmlStr = renderTemplate templateHashMap tplStr
+                return htmlStr
+
+viewIndex :: Snap ()
+viewIndex = do content <- liftIO getContent
+               writeBS "hello world"
+
+--billy :: IO ()
+--billy = eitherT (putStrLn . unlines) return $ do
+--  heist <- initHeist mempty
+--    { hcTemplateLocations = [ loadTemplates "templates" ]
+--    , hcInterpretedSplices = defaultInterpretedSplices
+--    }
+--
+--  Just (output, _) <- renderTemplate heist "billy"
+--
+--  liftIO . BS.putStrLn . toByteString $ output
+
 
 site :: Snap ()
 site =
-    ifTop (writeBS "hello world") <|>
-    route [ ("foo", writeBS "bar")
+    ifTop viewIndex <|>
+    route [ ("foo", viewIndex)
           , ("echo/:echoparam", echoHandler)
           ] <|>
     dir "static" (serveDirectory ".")
