@@ -61,17 +61,21 @@ processErCode code                 = do putStrLn $ "Processing "
 
 toStrictBS = BS.concat . BL.toChunks
 
+escape [] = []
+escape ('"':s) = "\\\"" ++ escape(s)
+escape (c:s) = [c] ++ escape(s)
+
 generate :: Snap ()
 generate = do lContent :: BL.ByteString <- getRequestBody
               let mContent = toStrictBS lContent
               liftIO $ putStrLn "Processing generate request"
               res <- liftIO $ processRequest mContent
-              case res of Left errorMsg -> writeBS $ BS.pack errorMsg
+              case res of Left errorMsg -> writeBS $ BS.pack $ "{ \"error\" : \"" ++ (escape errorMsg) ++ "\" }"
                           Right image -> do --modifyResponse $ addHeader "Content-Type" "image/png"
                                             liftIO $ putStrLn $ "Sending data " ++ (show $ BS.length image)
                                             let fileName = "generated/foo" ++ (show (BS.length image)) ++ ".png"
                                             liftIO $ BS.writeFile fileName image
-                                            writeBS $ BS.pack fileName
+                                            writeBS $ BS.pack  $ "{ \"image\" : \"" ++ fileName ++ "\" }"
                                             return ()
               liftIO $ putStrLn "Done."
            where processRequest :: BS.ByteString -> IO (Either String ByteString)

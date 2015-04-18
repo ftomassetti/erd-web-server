@@ -15,9 +15,13 @@
                          return;
                      }
 
-
-                     document.getElementById("generatedImage").src = "http://localhost:8000/"+text;
-                     console.log('GOT: '+text);
+                     var data = JSON.parse(text);
+                     if (data.image) {
+                        document.getElementById("generatedImage").src = "http://localhost:8000/"+data.image;
+                        document.getElementById("status").innerHTML = "Success!";
+                     } else {
+                        document.getElementById("status").innerHTML = "ERROR: " + data.error;
+                     }
                  });
 
                 return false;
@@ -135,6 +139,7 @@ player      1--* play_player
     <img id="generatedImage" alt="data url loaded image" />
 </div>
     <br>
+    <span id="status">Generate something!</span>
     <a id="generateLink" href="#">Generate Diagram</a>
 
 </div>
