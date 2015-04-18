@@ -98,11 +98,11 @@ generate = do lContent :: BL.ByteString <- getRequestBody
               liftIO $ putStrLn "Processing generate request"
               res <- liftIO $ processRequest mContent
               case res of Left errorMsg -> writeBS $ BS.pack errorMsg
-                          Right image -> do modifyResponse $ addHeader "Content-Type" "image/png"
+                          Right image -> do --modifyResponse $ addHeader "Content-Type" "image/png"
                                             liftIO $ putStrLn $ "Sending data " ++ (show $ BS.length image)
-                                            let fileName = "foo" ++ (show (BS.length image)) ++ ".png"
+                                            let fileName = "generated/foo" ++ (show (BS.length image)) ++ ".png"
                                             liftIO $ BS.writeFile fileName image
-                                            writeBS image
+                                            writeBS $ BS.pack fileName
                                             return ()
               liftIO $ putStrLn "Done."
            where processRequest :: BS.ByteString -> IO (Either String ByteString)
@@ -115,4 +115,5 @@ site =
     ifTop viewIndex <|>
     route [ ("generate", generate)
           ] <|>
-    dir "assets" (serveDirectory "assets")
+    dir "assets" (serveDirectory "assets") <|>
+    dir "generated" (serveDirectory "generated")

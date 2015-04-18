@@ -30,3 +30,9 @@ a {
 a:hover {
     box-shadow: 1px 1px 1px #888888;
 }
+
+img {
+    max-width: 800px;
+    margin: auto;
+    display: block;
+}
