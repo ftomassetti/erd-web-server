@@ -5,16 +5,29 @@ html {
 
 .header {
 	border-bottom: 2px white solid;
+	font-family : Verdana, Geneva, sans-serif;
+}
+
+h1 {
+    display: inline-block
+}
+
+h2 {
+    display: inline-block;
+    margin-left: 20px;
+    font-style: italic;
+    color: #ddd;
 }
 
 .main {
-    margin: 20px;
+    margin: 10px;
 }
 
 #myTextarea {
     margin-top: 10px;
     min-width: 400px;
-    height: 500px;
+    height: 100%;
+    min-height: 500px;
 }
 
 a {
@@ -25,6 +38,12 @@ a {
     text-decoration: none;
     color: brown;
     box-shadow: 2px 2px 3px #888888;
+    clear: both;
+    display: block;
+    margin: auto;
+    width: 200px;
+    margin-top: 30px;
+    text-align: center;
 }
 
 a:hover {
@@ -32,7 +51,19 @@ a:hover {
 }
 
 img {
-    max-width: 800px;
+    max-width: 98%;
     margin: auto;
     display: block;
+}
+
+.editorArea {
+    display: inline-block;
+    /*float: left;*/
+    width: 48%;
+}
+
+.diagramArea {
+    /*float : right;*/
+    width: 48%;
+    display: inline-block;
 }
