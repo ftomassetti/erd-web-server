@@ -1,5 +1,5 @@
 {-# LANGUAGE OverloadedStrings #-}
-module ErdMain (main) where
+module ErdMain where
 
 -- Stolen from the ERD project: https://github.com/BurntSushi/erd
 
@@ -18,24 +18,24 @@ import qualified Data.GraphViz.Attributes.HTML as H
 import qualified Data.GraphViz.Types.Generalised as G
 import Data.GraphViz.Types.Monadic
 
-import Config
+--import Config
 import ER
 import Parse
 
-main :: IO ()
-main = do
-  conf <- configIO
-  er' <- uncurry loadER (cin conf)
-  case er' of
-    Left err -> do
-      hPutStrLn stderr err
-      exitFailure
-    Right er -> let dotted = dotER er
-                    toFile h = SB.hGetContents h >>= SB.hPut (snd $ cout conf)
-                    fmt = fromMaybe Pdf (outfmt conf)
-                 in graphvizWithHandle Dot dotted fmt toFile
-  hClose (snd $ cin conf)
-  hClose (snd $ cout conf)
+--main :: IO ()
+--main = do
+--  conf <- configIO
+--  er' <- uncurry loadER (cin conf)
+--  case er' of
+--    Left err -> do
+--      hPutStrLn stderr err
+--      exitFailure
+--    Right er -> let dotted = dotER er
+--                    toFile h = SB.hGetContents h >>= SB.hPut (snd $ cout conf)
+--                    fmt = fromMaybe Pdf (outfmt conf)
+--                 in graphvizWithHandle Dot dotted fmt toFile
+--  hClose (snd $ cin conf)
+--  hClose (snd $ cout conf)
 
 -- | Converts an entire ER-diagram from an ER file into a GraphViz graph.
 dotER :: ER -> G.DotGraph L.Text

@@ -1,6 +1,36 @@
 <html>
 <head>
     <link rel="stylesheet" type="text/css" href="assets/style.css">
+    <script src="assets/promise.min.js"></script>
+    <script type="text/javascript">
+
+            window.onload = function() {
+
+              var a = document.getElementById("generateLink");
+              a.onclick = function() {
+                console.log("CODE: " + editor.getValue());
+
+                /*qwest.post('/generate', editor.getValue())
+                 .then(function(response){
+                    // Make some useful actions
+                    console.log("RESPONSE: ");
+                 })
+                 .catch(function(e, url){
+                    console.log("ERROR: " + e);
+                 });*/
+
+                 promise.post('/generate', editor.getValue()).then(function(error, text, xhr) {
+                     if (error) {
+                         console.log('Error ' + xhr.status);
+                         return;
+                     }
+                     console.log('GOT: '+text);
+                 });
+
+                return false;
+              }
+            }
+        </script>
 </head>
 <body>
 <div class="header">
@@ -11,12 +41,15 @@
     <script src="assets/codemirror.js"></script>
     <textarea id=myTextarea></textarea>
     <script>
-      var editor = CodeMirror.fromTextArea(myTextarea, {{ OB }}
+      var editor = CodeMirror.fromTextArea(myTextarea, {
         lineNumbers: true
       });
+
     </script>
     <br>
-    <a href="#">Generate Diagram</a>
+    <a id="generateLink" href="#">Generate Diagram</a>
 </div>
 </body>
 </html>
+
+

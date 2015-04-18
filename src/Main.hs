@@ -34,6 +34,17 @@ import qualified Data.Text.IO as T
 import qualified Data.Vector as V
 import Data.Text.Encoding
 import qualified Data.ByteString as DBS
+import System.IO
+import System.IO.Temp
+import Parse
+import ER
+import ErdMain
+import qualified Data.ByteString.Lazy          as BL
+import qualified Data.ByteString.Lazy.Internal as BLI
+import qualified Data.GraphViz.Types.Generalised as G
+import qualified Data.Text.Lazy as L
+import Data.Knob
+import Data.GraphViz.Commands
 
 main :: IO ()
 main = quickHttpServe site
@@ -42,11 +53,62 @@ viewIndex :: Snap ()
 viewIndex = do content <- liftIO $ DBS.readFile "templates/index.karver"
                writeBS $ content
 
+--processErFile :: String -> FilePath -> Handle -> IO (Either String ByteString)
+--processErFile code filePath handle = do putStrLn $ "Processing " ++ filePath
+--                                        --putStrLn $ "Code: " ++ code
+--                                        hPutStr handle code
+--                                        --hSeek handle AbsoluteSeek 0
+--                                        res :: Either String ER <- loadER filePath handle
+--                                        let res' = case res of
+--                                                      Left err -> do return $ Left err
+--                                                      Right er -> do let dotted :: G.DotGraph L.Text = dotER er
+--                                                                      -- in memory handle
+--                                                                     knob <- newKnob (BS.pack [])
+--                                                                     imageHandle <- newFileHandle knob "test.png" WriteMode
+--                                                                     let getData handle = do bytes <- BS.hGetContents handle
+--                                                                                             BS.writeFile "fooo.png" bytes
+--                                                                                             return bytes
+--                                                                     let fmt :: GraphvizOutput = Png
+--                                                                     gvizRes :: ByteString <- graphvizWithHandle Dot dotted fmt getData
+--                                                                     return $ Right gvizRes
+--                                        res'
+
+processErCode :: String -> IO (Either String ByteString)
+processErCode code                 = do putStrLn $ "Processing "
+                                        res :: Either String ER <- loadER "foo.png" (L.pack code)
+                                        let res' = case res of
+                                                      Left err -> do return $ Left err
+                                                      Right er -> do let dotted :: G.DotGraph L.Text = dotER er
+                                                                      -- in memory handle
+                                                                     knob <- newKnob (BS.pack [])
+                                                                     imageHandle <- newFileHandle knob "test.png" WriteMode
+                                                                     let getData handle = do bytes <- BS.hGetContents handle
+                                                                                             BS.writeFile "fooo.png" bytes
+                                                                                             return bytes
+                                                                     let fmt :: GraphvizOutput = Png
+                                                                     gvizRes :: ByteString <- graphvizWithHandle Dot dotted fmt getData
+                                                                     return $ Right gvizRes
+                                        res'
+
+toStrictBS = BS.concat . BL.toChunks
+
 generate :: Snap ()
-generate = do mContent :: Maybe ByteString <- getParam "code"
-              let bContent :: ByteString = fromJust mContent
-              liftIO $ putStrLn $ BS.unpack bContent
-              writeBS $ "CIAO"
+generate = do lContent :: BL.ByteString <- getRequestBody
+              let mContent = toStrictBS lContent
+              liftIO $ putStrLn "Processing generate request"
+              res <- liftIO $ processRequest mContent
+              case res of Left errorMsg -> writeBS $ BS.pack errorMsg
+                          Right image -> do modifyResponse $ addHeader "Content-Type" "image/png"
+                                            liftIO $ putStrLn $ "Sending data " ++ (show $ BS.length image)
+                                            let fileName = "foo" ++ (show (BS.length image)) ++ ".png"
+                                            liftIO $ BS.writeFile fileName image
+                                            writeBS image
+                                            return ()
+              liftIO $ putStrLn "Done."
+           where processRequest :: BS.ByteString -> IO (Either String ByteString)
+                 processRequest bContent        = do let content :: String = BS.unpack bContent
+                                                     es :: Either String ByteString <- liftIO $ processErCode content
+                                                     return es
 
 site :: Snap ()
 site =

@@ -37,9 +37,8 @@ data GlobalOptions = GlobalOptions { gtoptions :: Options
 emptyGlobalOptions :: GlobalOptions
 emptyGlobalOptions = GlobalOptions M.empty M.empty M.empty M.empty
 
-loadER :: String -> Handle -> IO (Either String ER)
-loadER fpath f = do
-  s <- hGetContents f
+loadER :: String -> Text -> IO (Either String ER)
+loadER fpath s = do
   case parse (do { (opts, ast) <- document; return $ toER opts ast}) fpath s of
     Left err -> return $ Left $ show err
     Right err@(Left _) -> return err
