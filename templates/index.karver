@@ -8,16 +8,6 @@
 
               var a = document.getElementById("generateLink");
               a.onclick = function() {
-                //console.log("CODE: " + editor.getValue());
-
-                /*qwest.post('/generate', editor.getValue())
-                 .then(function(response){
-                    // Make some useful actions
-                    console.log("RESPONSE: ");
-                 })
-                 .catch(function(e, url){
-                    console.log("ERROR: " + e);
-                 });*/
 
                  promise.post('/generate', editor.getValue()).then(function(error, text, xhr) {
                      if (error) {
