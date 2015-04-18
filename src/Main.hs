@@ -44,20 +44,18 @@ viewIndex = do content <- liftIO $ DBS.readFile "templates/index.karver"
                writeBS $ content
 
 processErCode :: String -> IO (Either String ByteString)
-processErCode code                 = do putStrLn $ "Processing "
-                                        res :: Either String ER <- loadERFromText "foo.png" (L.pack code)
-                                        let res' = case res of
-                                                      Left err -> do return $ Left err
-                                                      Right er -> do let dotted :: G.DotGraph L.Text = dotER er
-                                                                      -- in memory handle
-                                                                     knob <- newKnob (BS.pack [])
-                                                                     imageHandle <- newFileHandle knob "test.png" WriteMode
-                                                                     let getData handle = do bytes <- BS.hGetContents handle
-                                                                                             return bytes
-                                                                     let fmt :: GraphvizOutput = Png
-                                                                     gvizRes :: ByteString <- graphvizWithHandle Dot dotted fmt getData
-                                                                     return $ Right gvizRes
-                                        res'
+processErCode code = do
+    -- the name we pass to loadERFromText does not really matter
+    res :: Either String ER <- loadERFromText "generated_image.png" (L.pack code)
+    case res of
+        Left err -> do return $ Left err
+        Right er -> do
+            let dotted :: G.DotGraph L.Text = dotER er
+            let getData handle = do bytes <- BS.hGetContents handle
+                                    return bytes
+            let fmt :: GraphvizOutput = Png
+            gvizRes :: ByteString <- graphvizWithHandle Dot dotted fmt getData
+            return $ Right gvizRes
 
 toStrictBS = BS.concat . BL.toChunks
 
@@ -66,23 +64,24 @@ escape ('"':s) = "\\\"" ++ escape(s)
 escape (c:s) = [c] ++ escape(s)
 
 generate :: Snap ()
-generate = do lContent :: BL.ByteString <- getRequestBody
-              let mContent = toStrictBS lContent
-              liftIO $ putStrLn "Processing generate request"
-              res <- liftIO $ processRequest mContent
-              case res of Left errorMsg -> writeBS $ BS.pack $ "{ \"error\" : \"" ++ (escape errorMsg) ++ "\" }"
-                          Right image -> do --modifyResponse $ addHeader "Content-Type" "image/png"
-                                            liftIO $ putStrLn $ "Sending data " ++ (show $ BS.length image)
-                                            randomId :: Int <- liftIO $ randomIO
-                                            let fileName = "generated/diagram_" ++ (show randomId) ++ ".png"
-                                            liftIO $ BS.writeFile fileName image
-                                            writeBS $ BS.pack  $ "{ \"image\" : \"" ++ fileName ++ "\" }"
-                                            return ()
-              liftIO $ putStrLn "Done."
-           where processRequest :: BS.ByteString -> IO (Either String ByteString)
-                 processRequest bContent        = do let content :: String = BS.unpack bContent
-                                                     es :: Either String ByteString <- liftIO $ processErCode content
-                                                     return es
+generate = do
+    lContent :: BL.ByteString <- getRequestBody
+    let mContent = toStrictBS lContent
+    liftIO $ putStrLn "(Processing generate request)"
+    res <- liftIO $ processRequest mContent
+    case res of Left errorMsg -> writeBS $ BS.pack $ "{ \"error\" : \"" ++ (escape errorMsg) ++ "\" }"
+                Right image -> do
+                    randomId :: Int <- liftIO $ randomIO
+                    let fileName = "generated/diagram_" ++ (show randomId) ++ ".png"
+                    liftIO $ BS.writeFile fileName image
+                    writeBS $ BS.pack  $ "{ \"image\" : \"" ++ fileName ++ "\" }"
+                    return ()
+    liftIO $ putStrLn "  Done."
+ where processRequest :: BS.ByteString -> IO (Either String ByteString)
+       processRequest bContent = do
+         let content :: String = BS.unpack bContent
+         es :: Either String ByteString <- liftIO $ processErCode content
+         return es
 
 site :: Snap ()
 site =
