@@ -1,6 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
 module Parse
-  ( loadER
+  ( loadER, loadERFromText
   )
 where
 
@@ -37,8 +37,13 @@ data GlobalOptions = GlobalOptions { gtoptions :: Options
 emptyGlobalOptions :: GlobalOptions
 emptyGlobalOptions = GlobalOptions M.empty M.empty M.empty M.empty
 
-loadER :: String -> Text -> IO (Either String ER)
-loadER fpath s = do
+loadER :: String -> Handle -> IO (Either String ER)
+loadER fpath f = do
+  s <- hGetContents f
+  loadERFromText fpath s
+
+loadERFromText :: String -> Text -> IO (Either String ER)
+loadERFromText fpath s = do
   case parse (do { (opts, ast) <- document; return $ toER opts ast}) fpath s of
     Left err -> return $ Left $ show err
     Right err@(Left _) -> return err

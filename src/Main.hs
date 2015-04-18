@@ -34,6 +34,7 @@ import qualified Data.GraphViz.Types.Generalised as G
 import qualified Data.Text.Lazy as L
 import Data.Knob
 import Data.GraphViz.Commands
+import System.Random
 
 main :: IO ()
 main = quickHttpServe site
@@ -44,7 +45,7 @@ viewIndex = do content <- liftIO $ DBS.readFile "templates/index.karver"
 
 processErCode :: String -> IO (Either String ByteString)
 processErCode code                 = do putStrLn $ "Processing "
-                                        res :: Either String ER <- loadER "foo.png" (L.pack code)
+                                        res :: Either String ER <- loadERFromText "foo.png" (L.pack code)
                                         let res' = case res of
                                                       Left err -> do return $ Left err
                                                       Right er -> do let dotted :: G.DotGraph L.Text = dotER er
@@ -52,7 +53,6 @@ processErCode code                 = do putStrLn $ "Processing "
                                                                      knob <- newKnob (BS.pack [])
                                                                      imageHandle <- newFileHandle knob "test.png" WriteMode
                                                                      let getData handle = do bytes <- BS.hGetContents handle
-                                                                                             BS.writeFile "fooo.png" bytes
                                                                                              return bytes
                                                                      let fmt :: GraphvizOutput = Png
                                                                      gvizRes :: ByteString <- graphvizWithHandle Dot dotted fmt getData
@@ -73,7 +73,8 @@ generate = do lContent :: BL.ByteString <- getRequestBody
               case res of Left errorMsg -> writeBS $ BS.pack $ "{ \"error\" : \"" ++ (escape errorMsg) ++ "\" }"
                           Right image -> do --modifyResponse $ addHeader "Content-Type" "image/png"
                                             liftIO $ putStrLn $ "Sending data " ++ (show $ BS.length image)
-                                            let fileName = "generated/foo" ++ (show (BS.length image)) ++ ".png"
+                                            randomId :: Int <- liftIO $ randomIO
+                                            let fileName = "generated/diagram_" ++ (show randomId) ++ ".png"
                                             liftIO $ BS.writeFile fileName image
                                             writeBS $ BS.pack  $ "{ \"image\" : \"" ++ fileName ++ "\" }"
                                             return ()
