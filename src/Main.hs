@@ -6,27 +6,17 @@ import           Control.Applicative
 import           Snap.Core
 import           Snap.Util.FileServe
 import           Snap.Http.Server
-import Blaze.ByteString.Builder (toByteString)
 import qualified Data.ByteString.Char8 as BS
 import Control.Monad.IO.Class (MonadIO(..))
 import Control.Monad.Trans.Either
 import Data.Monoid (mempty)
 import Data.Foldable (forM_)
-import Text.XmlHtml (Node(TextNode), renderHtmlFragment, Encoding(UTF8))
 
 import           Data.ByteString (ByteString)
---import           Snap.Snaplet
---import           Snap.Snaplet.Heist
 import           Snap.Util.FileServe
-------------------------------------------------------------------------------
-import           Heist
-import qualified Heist.Compiled as C
 import           Data.Monoid
 import           Data.Maybe
-import Control.Lens
-import Data.Either.Unwrap
 
-import Text.Karver
 import Data.HashMap.Strict (HashMap)
 import qualified Data.HashMap.Strict as H
 import Data.Text (Text)
@@ -35,7 +25,6 @@ import qualified Data.Vector as V
 import Data.Text.Encoding
 import qualified Data.ByteString as DBS
 import System.IO
-import System.IO.Temp
 import Parse
 import ER
 import ErdMain
@@ -52,26 +41,6 @@ main = quickHttpServe site
 viewIndex :: Snap ()
 viewIndex = do content <- liftIO $ DBS.readFile "templates/index.karver"
                writeBS $ content
-
---processErFile :: String -> FilePath -> Handle -> IO (Either String ByteString)
---processErFile code filePath handle = do putStrLn $ "Processing " ++ filePath
---                                        --putStrLn $ "Code: " ++ code
---                                        hPutStr handle code
---                                        --hSeek handle AbsoluteSeek 0
---                                        res :: Either String ER <- loadER filePath handle
---                                        let res' = case res of
---                                                      Left err -> do return $ Left err
---                                                      Right er -> do let dotted :: G.DotGraph L.Text = dotER er
---                                                                      -- in memory handle
---                                                                     knob <- newKnob (BS.pack [])
---                                                                     imageHandle <- newFileHandle knob "test.png" WriteMode
---                                                                     let getData handle = do bytes <- BS.hGetContents handle
---                                                                                             BS.writeFile "fooo.png" bytes
---                                                                                             return bytes
---                                                                     let fmt :: GraphvizOutput = Png
---                                                                     gvizRes :: ByteString <- graphvizWithHandle Dot dotted fmt getData
---                                                                     return $ Right gvizRes
---                                        res'
 
 processErCode :: String -> IO (Either String ByteString)
 processErCode code                 = do putStrLn $ "Processing "
