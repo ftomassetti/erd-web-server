@@ -33,50 +33,24 @@ import Data.Text (Text)
 import qualified Data.Text.IO as T
 import qualified Data.Vector as V
 import Data.Text.Encoding
+import qualified Data.ByteString as DBS
 
 main :: IO ()
 main = quickHttpServe site
 
-templateHashMap :: HashMap Text Value
-templateHashMap = H.fromList $
-  [ ("OB", Literal "{")
-  , ("items", List $ V.fromList [ Literal "eggs"
-                                , Literal "flour"
-                                , Literal "cereal"
-                                ])
-  ]
-
-
-getContent :: IO Text
-getContent = do tplStr <- T.readFile "templates/index.karver"
-                let htmlStr = renderTemplate templateHashMap tplStr
-                return htmlStr
-
 viewIndex :: Snap ()
-viewIndex = do content <- liftIO getContent
-               writeBS $ encodeUtf8 content
+viewIndex = do content <- liftIO $ DBS.readFile "templates/index.karver"
+               writeBS $ content
 
---billy :: IO ()
---billy = eitherT (putStrLn . unlines) return $ do
---  heist <- initHeist mem--    { hcTemplateLocations = [ loadTemplates "templates" ]
---    , hcInterpretedSplices = defaultInterpretedSplices
---    }
---
---  Just (output, _) <- renderTemplate heist "billy"
---
---  liftIO . BS.putStrLn . toByteString $ output
-
+generate :: Snap ()
+generate = do mContent :: Maybe ByteString <- getParam "code"
+              let bContent :: ByteString = fromJust mContent
+              liftIO $ putStrLn $ BS.unpack bContent
+              writeBS $ "CIAO"
 
 site :: Snap ()
 site =
     ifTop viewIndex <|>
-    route [ ("foo", viewIndex)
-          , ("echo/:echoparam", echoHandler)
+    route [ ("generate", generate)
           ] <|>
     dir "assets" (serveDirectory "assets")
-
-echoHandler :: Snap ()
-echoHandler = do
-    param <- getParam "echoparam"
-    maybe (writeBS "must specify echo/param in URL")
-          writeBS param
