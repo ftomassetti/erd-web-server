@@ -66,9 +66,9 @@ escape (c:s) = [c] ++ escape(s)
 generate :: Snap ()
 generate = do
     lContent :: BL.ByteString <- getRequestBody
-    let mContent = toStrictBS lContent
+    let erCode :: String = BS.unpack $ toStrictBS lContent
     liftIO $ putStrLn "(Processing generate request)"
-    res <- liftIO $ processRequest mContent
+    res <- liftIO $ processErCode $ erCode
     case res of Left errorMsg -> writeBS $ BS.pack $ "{ \"error\" : \"" ++ (escape errorMsg) ++ "\" }"
                 Right image -> do
                     randomId :: Int <- liftIO $ randomIO
@@ -77,11 +77,6 @@ generate = do
                     writeBS $ BS.pack  $ "{ \"image\" : \"" ++ fileName ++ "\" }"
                     return ()
     liftIO $ putStrLn "  Done."
- where processRequest :: BS.ByteString -> IO (Either String ByteString)
-       processRequest bContent = do
-         let content :: String = BS.unpack bContent
-         es :: Either String ByteString <- liftIO $ processErCode content
-         return es
 
 site :: Snap ()
 site =
