@@ -12,7 +12,7 @@ Hopefully we could extract the code or erd in a library used by erd and erd-web-
 
 # Cool, how can I run this stuff?
 
-Run:
+For now you have to clone the repository and run:
 
 ```
 cabal update
@@ -21,3 +21,5 @@ erd-web-server -p 8000
 # or
 dist/build/erd-web-server/erd-web-server -p 8000
 ```
+
+In the future we hope to put this on Hackage
