@@ -22,4 +22,11 @@ erd-web-server -p 8000
 dist/build/erd-web-server/erd-web-server -p 8000
 ```
 
-In the future we hope to put this on Hackage
+In the future we hope to put this on Hackage.
+
+## I do not know how to run this Haskell weird stuff on my Mac
+
+Simply install cabal:
+```
+brew install cabal-install
+```
